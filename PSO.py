@@ -34,7 +34,7 @@ class Particle:
                 self.position[i] = self.position_boundary[i][0]
     
 class PSO:
-    def __init__(self, size, n_iter, fitness_function, position_boundary, velocity_boundary, w_inertia, C1, C2, random_state, save_history):
+    def __init__(self, size, n_iter, fitness_function, position_boundary, velocity_boundary, w_inertia, C1, C2, random_state, print_best, save_history):
         self.size = size
         self.n_iter = n_iter
         self.fitness_function = fitness_function
@@ -43,6 +43,7 @@ class PSO:
         self.w_inertia = w_inertia
         self.C1 = C1
         self.C2 = C2
+        self.print = print_best
         self.save_history = save_history
         np.random.seed(random_state)
 
@@ -62,14 +63,16 @@ class PSO:
             swarm.append(initial_particle)
 
         if self.save_history == True:
-            swarm_history = []
-            swarm_history.append([x.position for x in swarm])
+            self.swarm_history = []
+            self.fitness_history = []
+            self.best_history = []
 
         # Optimization
         iteration = 0
         global_best_fitness = -1
         while iteration < self.n_iter:
             temp = []
+            fitness_temp = []
 
             for j in range(self.size):
                 swarm[j].fit(self.fitness_function)
@@ -80,12 +83,12 @@ class PSO:
             for j in range(self.size):
                 swarm[j].update_attributes(self.w_inertia, self.C1, self.C2, global_best_position)
                 temp.append(swarm[j].position)
-
+                fitness_temp.append(swarm[j].fitness)
+                
             iteration += 1
-            print(f'iteration: {iteration} | best_position : {global_best_position} | best_fit : {global_best_fitness}')
+            if self.print == True:
+                print(f'iteration: {iteration} | best_position : {global_best_position} | best_fit : {global_best_fitness}')
             if self.save_history == True:
-                swarm_history.append(temp)
-
-        self.sol = global_best_position
-        if self.save_history == True:
-            self.swarm_history = swarm_history
+                self.swarm_history.append(temp)
+                self.fitness_history.append(fitness_temp)
+                self.best_history.append((global_best_position, global_best_fitness))
